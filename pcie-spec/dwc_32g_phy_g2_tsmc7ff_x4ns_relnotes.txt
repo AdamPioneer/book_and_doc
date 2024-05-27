@@ -1,0 +1,574 @@
+Copyright (c) 2022 Synopsys, Inc. 
+This IP and the associated documentation are proprietary to Synopsys, Inc. 
+This IP may only be used in accordance with the terms and conditions 
+of a written license agreement with Synopsys, Inc. All other use, 
+reproduction, or distribution of this IP is strictly prohibited.
+--------------------------------------------------------------------------------
+Synopsys Statement on Inclusivity and Diversity
+Synopsys is committed to creating an inclusive environment where every employee,
+customer, and partner feels welcomed. We are reviewing and removing exclusionary
+language from our products and supporting customer-facing collateral. Our effort
+also includes internal initiatives to remove biased language from our engineering
+and working environment, including terms that are embedded in our software and IPs.
+At the same time, we are working to ensure that our web content and software applications
+are usable to people of varying abilities. You may still find examples of non-inclusive
+language in our software or documentation as our IPs implement industry-standard
+specifications that are currently under review to remove exclusionary language.
+--------------------------------------------------------------------------------
+
+MP32 x4 PHY G2 for TSMC 7FF 1.8V
+
+Release 2.03a
+Nov 24, 2022
+
+Changes from rel 2.02a:
+
+PMA update:
+- PMA analog model enhancement.
+
+PHY Cust TE update:
+- TB enhancement update for loopback test.
+
+PHY synthesis and constraint update:
+- Synthesis script and constraint enhancement update. 
+ 
+ATE updates:
+ Must-have updates:
+ - ATE parameter update.
+ - Increase the waiting time during the period of toggling rx_reset.
+ - Increase the waiting time between rx_reset toggling done and RX adaptation.
+ - Support ALU feature for DC level test and TX VCM test with new testcases "ate_tx_dc_levels_test_alu" and "ate_tx_vcm_test_alu".  Previous testcase  "ate_tx_dc_levels_test" and "ate_tx_vcm_test" are not available.
+
+ Enhancement:
+ - Support new firmware.
+ - Enhancement to control TOKEN_DLY with macro.
+ - Remove debug registers in ate_register_test.
+ - Read tx_ropll_state for customer debugging.
+ - Add override for tx/rx_term_ctrl[3].
+ 
+IPXACT update:
+- IPXACT update due to firmware update.
+
+FW updates:
+FW 2.0_9 to FW 2.1  - 
+- Updated existing thresholds for TX pre-shoot direction and updated algorithm for post-cursor direction recommendation
+- Re-apply analog workarounds for rx_reset when context restore is enabled
+- Added the silicon settings update for improved JTOL performance
+
+FW 2.0_7 to FW 2.0_9  - 
+- Updated existing CTLE + VGA stage to include ATT adaptation
+- Replaced existing ATT + CTLE + VGA adaptation stage with AFE peaking adaptation 
+- Updated the start-up figure of merit to include an eye mask check 
+- Bypassed RX recalibration when rxX_reset is asserted prior to adaptation to reduce latency when context restore is enabled
+- Restore term_ctrl value during all reset/rate requests
+- The mission mode tap1 offset results is stored in the AON register
+- Added feature to disable TX/DX DCC based on txX_misc[7] and rxX_misc[7] respectively
+- Added overflow/underflow checks to mission mode tap1 offset
+- Added underflow/overflow check to mission mode TX DCC
+- Added overflow check to CTLE_BOOST in AFE adaptation 
+- txX_rate is forced to 0 in rx2tx loopback test mode 
+- Re-enable the CDR PPM detector feature after rx_adaptation 
+- Updated slicer rotation restore to include tap1 offset value, which is updated during mission mode data slicer calibration 
+
+FW 2.0_9 limitations:
+- Gen4/5 - JTOL compliance may not be met due to required settings update, which will be provided in the final firmware
+  - ATE test - A document can be provided to address the above JTOL limitations with FW 2.0_9
+  - System level test (controller + PHY) - Updated firmware + settings will be required
+- The PHY settings may not be applied correctly if context restore feature is enabled in non-ATE mode. This will be addressed in next revision of FW. 
+
+FW 2.0_5 to FW 2.0_7  - 
+- Updated mission-mode data slicer calibration to improve calibration (eye centering) for over-equalized cases.
+- Updated the CDR reset delays and the reference tracking delays after rx_reset.
+- Added new feature to increase the range of termination values
+- Enabled lane staggering feature by updating the TOKEN_DLY register (value = 7)
+- Code update to skip coarse adapt bit during start-up adaptation for RAW >=1.14
+- Added programmable RTRIM threshold feature in the firmware
+- Code update to avoid un-necessary PMA power-cycle during mission mode interruption
+- Added a feature to copy DPLL frequency register value to ADPT_CTL_12 register
+- Disabled RX/TX DCC range calibration for new AC coupled architecture
+- Firmware feature to allow for ADHOC register programming in POR/PG for RAW >=1.14
+- Restore of MPLL setting during POR if tune_done bit was set to 1
+- Code enhancements to support ATE test 
+- Disable SRAM recording feature by default 
+
+UPCS updates:
+- Added support for independent reference clock requests for bifurcated links within a single PMA
+- Updated MPLL Settings
+- Updated Synthesis Constraints
+- Updated Spyglass Constraints
+
+BE updates:
+- GDS update for DRC 1.3_3 fixes, PS21 fixes 
+- IBIS-AMI model updated for PS21 fix
+
+
+Special notes
+-------------
+This IP contains layers which may lead to additional costs in manufacturing
+Please check with the foundry
+105:6
+117:6
+
+IP_TIGHTEN_DENSITY switch settings, present in DRC decks, used by Synopsys are different than
+TSMC recommended values. Application note on Solvnet to be referred for details
+(https://solvnet.synopsys.com/retrieve/038760.html). The article also details how the
+IP_TIGHTEN_DENSITY switches in the TSMC DRC decks can be used when checking IP to prevent
+density violations because of density window placement at the chip level.
+
+
+Metal stacks
+------------
+13M_1X_h_1Xa_v_1Ya_h_5Y_vhvhv_2Yy2Z
+15M_1X_h_1Xa_v_1Ya_h_5Y_vhvhv_2Yy2Yx2R
+
+
+Package contents
+----------------
+doc
+  *_views      - Signal description files in .csv and .tcl format
+
+macro
+  interface    - Verilog header file
+  rtl          - RTL verilog files
+
+phy
+  include      - Verilog include files
+  interface    - Verilog header file
+  ipxact       - IP-XACT description
+  rtl          - RTL verilog files
+  sim          - Simulation scripts
+  spyglass     - CDC files
+  synth        - Synthesis scripts
+  testbench    - Behavioral model simulation test environment
+  upf          - PG mapping files
+
+pma
+  atpg         - Scan netlists, DFT models, ATPG example script
+  behavior     - Verilog behavioral model
+  bscan        - Boundary scan scripts
+  gds          - GDSII layout databases, layers table
+  ibis_ami     - IBIS AMI models
+  icv          - ICV verification reports
+  interface    - Verilog header file
+  lef          - LEF files
+  netlist      - CDL netlist for LVS
+  pi           - Power Integrity files
+  timing       - Timing libraries
+
+upcs
+  include      - Verilog include files
+  interface    - Verilog header file
+  rtl          - RTL verilog files
+  sim          - Simulation scripts
+  spyglass     - CDC files
+  synth        - Synthesis scripts
+  testbench    - Behavioral model simulation test environment
+  upf          - PG mapping files
+
+
+Devices used
+------------
+crtmom_2t
+moscap_rf18_nw
+moscap_rf_nw
+nch_18_mac
+nch_18ud12_mac
+nch_18ud15_mac
+nch_lvt_mac
+nch_svt_mac
+nch_ulvt_mac
+ndio_hia18_mac
+nmoscap_18
+pch_18_mac
+pch_18ud12_mac
+pch_18ud15_mac
+pch_lvt_mac
+pch_svt_mac
+pch_ulvt_mac
+pdio_hia18_mac
+pnp_i2_mac
+rhim_nw
+rm0w
+rm12w
+rm13w
+rm14w
+rm15w
+rm1w
+rm2w
+rm3w
+rm4w
+rm5w
+rm6w
+rm7w
+rm8w
+rmap
+
+
+Tools and versions
+------------------
+Design Compiler : 2019.12-SP5-5
+ICC2            : 2021.06-SP4
+Formality       : 2019.12-SP5
+Primetime       : 2021.06
+VCS             : 2020.12-SP2
+Spyglass        : 2020.03-01
+Guideware       : 2017.03
+ICV             : 2022.03
+
+
+Standard cell library:
+Vendor: Synopsys
+
+
+Design Rules    : TSMC 7 NM CMOS LOGIC DESIGN RULES (N7)
+Document        : T-N07-CL-DR-001
+Version         : 1.3_2
+Date            : 2020-09-24
+
+
+Hspice Models   : TSMC 7 NM CMOS LOGIC FIN FET HKMG 0.75/1.8V SPICE MODEL
+Document        : T-N07-CL-SP-001
+Version         : 1.2_2p3
+Date            : 2020-07-10
+
+
+Decks
+-----
+LVS ICV          : DFM_LVS_RC_ICV_N7_1p13M_1X1Xa1Ya5Y2Yy2Z_ALRDL.1.2a (1.2a)
+                   DFM_LVS_RC_ICV_N7_1p15M_1X1Xa1Ya5Y2Yy2Yx2R_ALRDL.1.2a (1.2a_update_210208)
+
+DRC ICV          : ICVN7FF_13M_1X1Xa1Ya5Y2Yy2Z_001.13_3b.encrypt (1.3_3b)
+                   ICVN7FF_15M_1X1Xa1Ya5Y2Yy2Yx2R_001.13_3b.encrypt (1.3_3b)
+
+DRC ANT ICV      : ICVN7FF_13M_1X1Xa1Ya5Y2Yy2Z_001_ANT.13_2a.encrypt (1.3_2a)
+                   ICVN7FF_15M_1X1Xa1Ya5Y2Yy2Yx2R_001_ANT.13_2a.encrypt (1.3_2a)
+
+DRC PAD FC ICV   : ICVN7_CU_BUMP_ON_PAD_15M_1X1Xa1Ya5Y2Yy2Yx2R_004.07b (0.7b)
+                   ICVN7_CU_BUMP_ON_PAD_13M_1X1Xa1Ya5Y2Yy2Z_004.07b (0.7b)
+
+
+ICV ANT deck switches and changes
+---------------------------------
+
+Before running ICV ANT, please adjust the corresponding blocks in the ANT deck in accordance with the following settings:
+hierarchy_options( flatten = { } )
+
+#define AP_28K_THICKNESS
+
+
+ICV DRC deck switches and changes
+---------------------------------
+
+Before running ICV DRC, please adjust the corresponding blocks in the DRC deck in accordance with the following settings:
+hierarchy_options( flatten = { } )
+
+#define ICV_REPORT_DENSITY
+//#define ICV_DV_REPORT
+//#define SNPSINDESIGN
+//#define USE_ICC2
+//#define EXTENDED_LAYERS
+//#define SNPS_M2_HORIZONTAL
+//#define SNPS_M3_HORIZONTAL
+#define SELECTABLE_VIOLATION_COMMENTS
+#define SELECTABLE_VIOLATION_NAMES
+//#define DEBUG_VOLTAGE_RULE
+//#define DEBUG_VOLTAGE_RULE_OUTPUT_ALL_VOLTAGE_TEXT
+//#define FULL_CHIP
+//#define WITH_SEALRING
+#define CHECK_LOW_DENSITY
+#define WITH_POLYIMIDE
+#define WITH_APRDL
+#define AP_28K_THICKNESS
+//#define SHDMIM_RULE_CHECK
+//#define SHDMIM
+//#define LEAD_FREE
+//#define EUTECTIC
+#define CU_BUMP
+//#define CU_ROUND_BUMP
+//#define U_BUMP
+//#define G0_MASK_HINT
+#define USE_IO_VOLTAGE_ON_CORE_TO_IO_NET
+//#define USE_SD_VOLTAGE_ON_CORE_TO_IO_NET
+//#define SKIP_CELL_BOUNDARY
+//#define LUP_FILTER
+#define ALL_AREA_IO
+//#define DISCONNECT_ALL_RESISTOR
+//#define CONNECT_ALL_RESISTOR
+#define DEFINE_PAD_BY_TEXT
+//#define CHECK_FLOATING_GATE_BY_TEXT
+#define CHECK_FLOATING_GATE_BY_PRIMARY_TEXT
+//#define GUIDELINE_ESD_CDM7A
+//#define GUIDELINE_ESD_CDM9A
+//#define GUIDELINE_ESD_CDM14A
+#define IP_LEVEL_LUP_CHECK
+#define LUP_MASK_HINT
+#define LUP_SANITY_CHECK
+#define ESDLU_IP_TIGHTEN_DENSITY
+//#define SHDMIM_KOZ_AP_SPACE_5um
+//#define SHDMIM_KOZ_AP_SPACE_5um_IP
+//#define Multi_VOLTAGE_BIN_WITHIN_CHIP
+//#define SINGLE_VOLTAGE_BIN_WITHIN_CHIP
+#define SINGLE_VOLTAGE_BIN_0D96
+//#define SINGLE_VOLTAGE_BIN_1D32
+//#define SINGLE_VOLTAGE_BIN_1D65
+//#define SINGLE_VOLTAGE_BIN_1D8
+#define COD_RULE_CHECK
+//#define COD_MASK_HINT
+//#define COD_RULE_CHECK_ONLY
+#define PATTERN_TREATMENT_SANITY_RULE
+#define FRONT_END
+#define BACK_END
+#define prBoundary_FIN
+#define prBoundary_COD
+#define DVIAxR3_For_NonFlipChip
+#define GUIDELINE_ESD
+#define GUIDELINE_ANALOG
+CELLSFORRRULEANALOG : list of string = {"*"};
+EXCLCELLSFORRRULEANALOG : list of string = {"_NULL_CELL_NAME_"};
+#define G0_RULE_CHECK
+//#define G0_RULE_CHECK_ONLY
+#define TP_CHECK
+#define VOLTAGE_RULE_CHECK
+//#define VOLTAGE_RULE_CHECK_ONLY
+#define ESD_LUP_RULE_CHECK
+//#define ESD_LUP_RULE_CHECK_ONLY
+#define SRAM_SANITY_DRC
+//#define SRAM_SANITY_DRC_ONLY
+//#define DENSITY_RULE_CHECK_ONLY
+#define UseprBoundary
+//#define ChipWindowUsed
+XLB : double = 0.0;
+YLB : double = 0.0;
+XRT : double = 1000.0;
+YRT : double = 1000.0;
+SCRIBELINEX : double = 180.0;
+SCRIBELINEY : double = 180.0;
+#define DUMMY_PRE_CHECK
+//#define DUMMY_PRE_CHECK_TIGHTEN
+#define IP_TIGHTEN_DENSITY
+#define IP_TIGHTEN_BOUNDARY
+//#define DFM
+//#define DFM_ONLY
+CELLSFORRRULERECOMMENDED : list of string = {"*"};
+CELLSFORRRULEGUIDELINE : list of string = {"*"};
+EXCLCELLSFORRRULERECOMMENDED : list of string = {"_NULL_CELL_NAME_"};
+EXCLCELLSFORRRULEGUIDELINE : list of string = {"_NULL_CELL_NAME_"};
+#define Recommended
+#define Guideline
+#define First_priority
+#define Manufacturing_concern
+#define Device_performace
+#define Dummy_health
+#define d_FLIP_CHIP
+//#define KOZ_High_subst_layer
+//#define USER_DEFINED_DELTA_VOLTAGE
+
+From: PAD_TEXT : const list of string = { "*" };    /* pin name of PAD */
+To  : PAD_TEXT : const list of string = { "tx4_m", "tx4_p", "tx5_m", "tx5_p", "tx6_m", "tx6_p", "tx7_m", "tx7_p", "rx4_m", "rx4_p", "rx5_m", "rx5_p", "rx6_m", "rx6_p", "rx7_m", "rx7_p", "tx0_m", "tx0_p", "tx1_m", "tx1_p", "tx2_m", "tx2_p", "tx3_m", "tx3_p", "ref_pad_clk_m", "ref_pad_clk_p", "resref", "rx0_m", "rx0_p", "rx1_m", "rx1_p", "rx2_m", "rx2_p", "rx3_m", "rx3_p" };
+
+From: VDD_TEXT : const list of string = { "VDD*" };    /* pin name of VDD */
+To  : VDD_TEXT : const list of string = { "vddcore", "vptx6", "vptx2", "vptx3", "vptx5", "vptx1", "vp", "vpdig", "vph", "vptx0", "vptx4", "vptx7" };
+
+From: VSS_TEXT : const list of string = { "VSS*" };    /* pin name of VSS */
+To  : VSS_TEXT : const list of string = { "vsscore_0", "vsscore_1", "vsscore_2", "vsscore_3", "vsscore_4", "vsscore_5", "vsscore_6", "vsscore_7", "gd" };
+
+From: uppercase = true
+To  : uppercase = true,
+      verbose_results_file = {ERRORS}
+
+From: DENSITY_STEP_RATIOA : double = 1 / 50;
+To  : DENSITY_STEP_RATIOA : double = 1 / 100;
+
+From: DENSITY_STEP_RATIOB : double = 1 / 50;
+To  : DENSITY_STEP_RATIOB : double = 1 / 100;
+
+
+ICV LVS deck switches and changes
+---------------------------------
+
+Before running ICV LVS, please adjust the corresponding blocks in the LVS deck in accordance with the following settings:
+hierarchy_options( flatten = { } )
+match( report_black_box_errors = {ERROR_NO_ABORT,ERROR_NO_ABORT,ERROR_NO_ABORT} )
+text_net( opens = MERGE_CONNECTED )
+text_options( colon_text = EQUATE_NETS )
+
+//#define unrecognized_device_checking
+#define PICKUP_CHECK
+//#define RC_DFM_RULE
+//#define CROSS_REFERENCE
+//#define FILTER_DGS_TIED_MOS
+#define MATCHFLAG
+#define WELL_TO_PG_CHECK
+#define GATE_TO_PG_CHECK
+//#define PATH_CHECK
+//(1) nodes have a path to power but no path to ground
+//(2) nodes have a path to ground but no path to power
+//(3) nodes have no path to power or ground
+//(4) nodes have no path to any label net
+#define DS_TO_PG_CHECK
+#define FLOATING_WELL_CHECK
+//The nwell of moscaps and nwell-resistor are excluded.
+#define LVSDMY4_CHECK
+//#define NW_RING
+//#define MIMCAP_TYPE
+//#define WELL_TEXT
+//#define SKIP_PLE
+//#define SKIP_CPO
+#define FILTER_PODE
+//#define extract_dnwpsub
+//#define extract_pwdnw
+//#define extract_pnwdio
+//#define LVS_REDUCE_PARALLEL_MOS
+//#define LVS_REDUCE_PARALLEL_MIMCAP
+//#define LVS_REDUCE_SPLIT_GATES
+//#define SKIP_ODSE
+//#define SKIP_MBE
+//#define FLICKER_CORNER_EXTRACTION
+//#define SELF_HEATING_EFFECT_EXTRACTION
+//#define COLOR_AWARE_CHECK
+
+From: user_functions_file = "DFM/icv_compare.rh",
+To  : user_functions_file = "<Specify PATH>",
+
+From: schematic_library_file = {{"unit.cdl", SPICE}},
+To  : schematic_library_file = {{"<Specify PATH>", SPICE}},
+
+From: schematic_top_cell = SCHEMATIC_TOPCELL,
+To  : schematic_top_cell = SCHEMATIC_TOPCELL,
+        check_property_for_failed_equiv = true,
+
+From: device_db = device_db,
+To  : device_db = device_db,
+        include_empty_cells = NONE,
+
+From: POWER_NAME : list of string = {"AHVDD", "AHVDDB", "AHVDDG", "AHVDDR", "AHVDDWELL", "AVDD", "AVDDB", "AVDDBG", "AVDDG", "AVDDR", "AVDWELL", "DHVDD", "DVDD", "HVDDWELL", "TACVDD", "TAVD33", "TAVD33PST", "TAVDD", "TAVDDPST", "TVDD", "VD33", "VDD", "VDD5V", "VDDESD", "VDDG", "VDDM", "VDDPST", "VDDSA", "VDWELL"};
+To  : POWER_NAME : list of string = { "vddcore", "vptx6", "vptx2", "vptx3", "vptx5", "vptx1", "vp", "vpdig", "vph", "vptx0", "vptx4", "vptx7" };
+
+From: GROUND_NAME : list of string = {"AGND", "AHVSS", "AHVSSB", "AHVSSG", "AHVSSR", "AHVSSUB", "AVSS", "AVSSB", "AVSSBG", "AVSSG", "AVSSR", "AVSSUB", "DHVSS", "DVSS", "GND", "HVSSUB", "TACVSS", "TAVSS", "TAVSSPST", "TVSS", "VS33", "VSS", "VSSESD", "VSSG", "VSSM", "VSSPST", "VSSUB"};
+To  : GROUND_NAME : list of string = { "vsscore_0", "vsscore_1", "vsscore_2", "vsscore_3", "vsscore_4", "vsscore_5", "vsscore_6", "vsscore_7", "gd" };
+
+
+ICV PAD deck switches and changes
+---------------------------------
+#define ICV_REPORT_DENSITY
+#define WITH_APRDL
+#define AP_28K_THICKNESS
+//#define ChipWindowUsed
+XLB : const double = 0.0;
+YLB : const double = 0.0;
+XRT : const double = 1000.0;
+YRT : const double = 1000.0;
+#define BUMP_PITCH_130um_150um
+//#define BUMP_PITCH_150um_180um
+//#define BUMP_PITCH_180um_210um
+#define DFM
+//#define USR_PITCH_WIDTH
+USR_BUMP_PITCH : const double = 130;
+USR_UBM_WIDTH : const double = 70;
+USR_UBM_LENGTH : const double = 90;
+USR_PM_WIDTH : const double = 40;
+USR_CB2_WIDTH : const double = 48;
+
+
+Waived violations
+-----------------
+PMA
+
+DRC:
+HIA.3.1g
+HIA.3g
+LUP.WARN.1
+LUP.WARN.5
+
+ERC:
+FLOATING.nxwell_float
+FLOATING.psub
+layout_grid_errors:non_45_edge
+npvss49
+text_net:text_open_rename
+text_net:text_unused
+
+PAD:
+TOP_METAL_SCHEME:WARNING1
+UBM.EN.4
+UBM.R.5
+
+
+
+PVT corners
+-----------
+ff0p945v0c_0p825v_cbest_CCbest
+ff0p945v0c_0p825v_cworst_CCworst
+ff0p945v0c_0p825v_rcbest_CCbest
+ff0p945v0c_0p825v_rcworst_CCworst
+ff0p945v0c_0p935v_cbest_CCbest
+ff0p945v0c_0p935v_cworst_CCworst
+ff0p945v0c_0p935v_rcbest_CCbest
+ff0p945v0c_0p935v_rcworst_CCworst
+ff0p945v0c_0p945v_cbest_CCbest
+ff0p945v0c_0p945v_cworst_CCworst
+ff0p945v0c_0p945v_rcbest_CCbest
+ff0p945v0c_0p945v_rcworst_CCworst
+ff0p945v125c_0p825v_cbest_CCbest
+ff0p945v125c_0p825v_cworst_CCworst
+ff0p945v125c_0p825v_rcbest_CCbest
+ff0p945v125c_0p825v_rcworst_CCworst
+ff0p945v125c_0p935v_cbest_CCbest
+ff0p945v125c_0p935v_cworst_CCworst
+ff0p945v125c_0p935v_rcbest_CCbest
+ff0p945v125c_0p935v_rcworst_CCworst
+ff0p945v125c_0p945v_cbest_CCbest
+ff0p945v125c_0p945v_cworst_CCworst
+ff0p945v125c_0p945v_rcbest_CCbest
+ff0p945v125c_0p945v_rcworst_CCworst
+ff0p945vn40c_0p825v_cbest_CCbest
+ff0p945vn40c_0p825v_cworst_CCworst
+ff0p945vn40c_0p825v_rcbest_CCbest
+ff0p945vn40c_0p825v_rcworst_CCworst
+ff0p945vn40c_0p935v_cbest_CCbest
+ff0p945vn40c_0p935v_cworst_CCworst
+ff0p945vn40c_0p935v_rcbest_CCbest
+ff0p945vn40c_0p935v_rcworst_CCworst
+ff0p945vn40c_0p945v_cbest_CCbest
+ff0p945vn40c_0p945v_cworst_CCworst
+ff0p945vn40c_0p945v_rcbest_CCbest
+ff0p945vn40c_0p945v_rcworst_CCworst
+ss0p81v0c_0p675v_cbest_CCbest
+ss0p81v0c_0p675v_cworst_CCworst
+ss0p81v0c_0p675v_rcbest_CCbest
+ss0p81v0c_0p675v_rcworst_CCworst
+ss0p81v0c_0p765v_cbest_CCbest
+ss0p81v0c_0p765v_cworst_CCworst
+ss0p81v0c_0p765v_rcbest_CCbest
+ss0p81v0c_0p765v_rcworst_CCworst
+ss0p81v0c_0p81v_cbest_CCbest
+ss0p81v0c_0p81v_cworst_CCworst
+ss0p81v0c_0p81v_rcbest_CCbest
+ss0p81v0c_0p81v_rcworst_CCworst
+ss0p81v125c_0p675v_cbest_CCbest
+ss0p81v125c_0p675v_cworst_CCworst
+ss0p81v125c_0p675v_rcbest_CCbest
+ss0p81v125c_0p675v_rcworst_CCworst
+ss0p81v125c_0p765v_cbest_CCbest
+ss0p81v125c_0p765v_cworst_CCworst
+ss0p81v125c_0p765v_rcbest_CCbest
+ss0p81v125c_0p765v_rcworst_CCworst
+ss0p81v125c_0p81v_cbest_CCbest
+ss0p81v125c_0p81v_cworst_CCworst
+ss0p81v125c_0p81v_rcbest_CCbest
+ss0p81v125c_0p81v_rcworst_CCworst
+ss0p81vn40c_0p675v_cbest_CCbest
+ss0p81vn40c_0p675v_cworst_CCworst
+ss0p81vn40c_0p675v_rcbest_CCbest
+ss0p81vn40c_0p675v_rcworst_CCworst
+ss0p81vn40c_0p765v_cbest_CCbest
+ss0p81vn40c_0p765v_cworst_CCworst
+ss0p81vn40c_0p765v_rcbest_CCbest
+ss0p81vn40c_0p765v_rcworst_CCworst
+ss0p81vn40c_0p81v_cbest_CCbest
+ss0p81vn40c_0p81v_cworst_CCworst
+ss0p81vn40c_0p81v_rcbest_CCbest
+ss0p81vn40c_0p81v_rcworst_CCworst
+tt0p9v25c_0p75v_typical
+tt0p9v25c_0p85v_typical
+tt0p9v25c_0p9v_typical
